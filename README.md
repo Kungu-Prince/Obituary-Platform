@@ -1,3 +1,4 @@
+                                                    OBITUARY PLATFORM
 Project Documentation: Obituary Platform
 1. Overview
 Project Name: Obituary Platform
