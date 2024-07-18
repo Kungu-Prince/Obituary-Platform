@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, redirect, url_for
+from flask import Flask, request, render_template, redirect, url_for, Response
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import extract
 from datetime import datetime
@@ -49,7 +49,6 @@ def submit_obituary():
 def view_obituaries():
     search_query = request.args.get('search', '')
 
-    # Start with all obituaries
     obituaries = Obituary.query
 
     if search_query:
@@ -64,7 +63,6 @@ def view_obituaries():
 
     return render_template('view_obituaries.html', obituaries=obituaries)
 
-# Route to edit an obituary
 @app.route('/edit_obituary/<int:obituary_id>', methods=['GET', 'POST'])
 def edit_obituary(obituary_id):
     obituary = Obituary.query.get_or_404(obituary_id)
@@ -84,6 +82,25 @@ def edit_obituary(obituary_id):
             return f"An error occurred: {str(e)}"
 
     return render_template('edit_obituary.html', obituary=obituary)
+
+@app.route('/sitemap.xml')
+def sitemap():
+    pages = []
+    obituaries = Obituary.query.all()
+
+    for obituary in obituaries:
+        url = url_for('view_obituaries', _external=True)
+        lastmod = obituary.submission_date.strftime('%Y-%m-%d')
+        pages.append({
+            'loc': url,
+            'lastmod': lastmod,
+            'changefreq': 'monthly',
+            'priority': '0.8'
+        })
+
+    xml_sitemap = render_template('sitemap_template.xml', pages=pages)
+    response = Response(xml_sitemap, mimetype='application/xml')
+    return response
 
 if __name__ == '__main__':
     app.run(debug=True)
